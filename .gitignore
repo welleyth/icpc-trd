@@ -1,0 +1,7 @@
+build/
+research/
+perf/
+tests/tricks_extract.inc
+*.o
+*.out
+a.out
