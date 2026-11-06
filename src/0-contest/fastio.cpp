@@ -9,10 +9,17 @@ int gc() {
   }
   return buf[bufPos++]; }
 ll readInt() {
-  int c = gc();
-  while (c != '-' && (c < '0' || c > '9')) c = gc();
-  bool neg = c == '-'; if (neg) c = gc();
+  int c = gc(); bool neg = false;    // '-' right before digits
+  while (c < '0' || c > '9') {
+    if (c == -1) return 0;           // end of input
+    neg = c == '-'; c = gc(); }
   ll x = 0;
   for (; c >= '0' && c <= '9'; c = gc())
     x = x * 10 + (c - '0');
   return neg ? -x : x; }
+string readStr() {                 // next non-space token
+  int c = gc();
+  while (c != -1 && isspace(c)) c = gc();
+  string s;
+  for (; c != -1 && !isspace(c); c = gc()) s += char(c);
+  return s; }

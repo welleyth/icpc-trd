@@ -20,3 +20,14 @@ long double segDist(PD p, PD a, PD b) {
           (p - a).dot(ab) / ab.norm2()));
   return (p - (a + ab * t)).len(); }
 // distance from p to LINE ab = |cross| / |ab|
+// exact intersection of LINES ab, cd for integer points:
+// false if parallel or not a lattice point. |coord| <= 1e9.
+bool lineInterInt(P a, P b, P c, P d, P& res) {
+  __int128 den = (b - a).cross(d - c);
+  __int128 num = (c - a).cross(d - c);
+  if (den == 0) return false;
+  __int128 X = a.x * den + (__int128)(b.x - a.x) * num;
+  __int128 Y = a.y * den + (__int128)(b.y - a.y) * num;
+  if (X % den || Y % den) return false;
+  res = {(ll)(X / den), (ll)(Y / den)};
+  return true; }

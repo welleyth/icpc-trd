@@ -12,5 +12,14 @@ void nearestSmaller(const vector<ll>& a, vi& L, vi& R) {
     st.push_back(i);
   }
 }
-// Sliding window max (width k): deque of indices with
-// decreasing values; pop front when index <= i - k.
+// Sliding window max: res[i - k + 1] = max of a[i-k+1 .. i].
+// Deque of indices with decreasing values. O(n). Min: flip <=.
+vector<ll> windowMax(const vector<ll>& a, int k) {
+  deque<int> q; vector<ll> res;
+  for (int i = 0; i < sz(a); i++) {
+    while (!q.empty() && a[q.back()] <= a[i]) q.pop_back();
+    q.push_back(i);
+    if (q.front() <= i - k) q.pop_front();
+    if (i >= k - 1) res.push_back(a[q.front()]);
+  }
+  return res; }

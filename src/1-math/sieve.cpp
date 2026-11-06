@@ -41,3 +41,17 @@ vector<ll> divisors(const vector<pair<ll, int>>& f) {
 ll phi(ll n, const vector<pair<ll, int>>& f) {
   for (auto [p, e] : f) n = n / p * (p - 1);
   return n; }
+// all divisors d of n with phi(d), from n's factorization.
+// gcd sums: sum_j gcd(x, a_j) = sum_{d | x} phi(d) * cnt[d],
+// cnt[d] = #{j : d | a_j}  (because n = sum_{d | n} phi(d)).
+vector<pair<ll, ll>> divPhi(const vector<pair<ll, int>>& f) {
+  vector<pair<ll, ll>> d{{1, 1}};
+  for (auto [p, e] : f) {
+    int s = sz(d); ll q = 1, ph = 1;
+    for (int i = 1; i <= e; i++) {
+      ph = i == 1 ? p - 1 : ph * p; q *= p;
+      for (int j = 0; j < s; j++)
+        d.push_back({d[j].first * q, d[j].second * ph});
+    }
+  }
+  return d; }

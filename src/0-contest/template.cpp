@@ -1,3 +1,5 @@
+// #pragma GCC optimize("O3,unroll-loops")  // heavy loops
+// #pragma GCC target("avx2")  // bitsets/SIMD; judge CPU!
 #include <bits/stdc++.h>
 using namespace std;
 using ll = long long;

@@ -1,5 +1,6 @@
 #include "t_util.h"
 #include "../src/2-ds/lazyseg.cpp"
+#include "lazy_shim.h"
 int main() {
   for (int it = 0; it < 20000; it++) {
     int n = rnd(1, 20); Lazy z(n); vector<ll> a(n);

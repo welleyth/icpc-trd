@@ -19,4 +19,11 @@ struct Hash {
   ull get(int l, int r) {
     return (h[r] + HM - hmul(h[l], p[r - l])) % HM; }
 };
+// HM is prime: inverse of a = hpow(a, HM - 2)
+ull hpow(ull b, ull e) {
+  ull r = 1;
+  for (; e; e >>= 1, b = hmul(b, b)) if (e & 1) r = hmul(r, b);
+  return r; }
 // LCP of two suffixes: binary search on length with get().
+// Exact tests on huge numbers (e.g. concyclic points with big
+// coordinates): compute the formula in the field mod HM.

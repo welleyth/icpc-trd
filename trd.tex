@@ -119,7 +119,21 @@ $n \le 5000$ & $n^2$ & $n \le 10^{18}$ & $\log n$, $\sqrt[3]{n}$\\
   hashing, ``answer is one of few candidates'').
 \item Sweep line + data structure over events sorted by coordinate.
 \item Binary search on the answer + greedy/flow check; parallel binary
-  search for many queries.
+  search for many queries. Greedy segmentation with an expensive check:
+  find each segment end by \emph{galloping} (try $1,2,4,\dots$ then binary
+  search), so the total cost stays $O(n\log n)\times$check.
+\item Objective linear/bilinear/convex in the parameters $\Rightarrow$
+  optimum at a corner/vertex: try only the $O(1)$ candidates. Enumerate the
+  $O(1)$ possible ``shapes'' of an answer and verify each in $O(n)$.
+\item L1 objectives ($\sum |x_i - x|$, Manhattan) separate per axis;
+  convex in each coordinate $\Rightarrow$ ternary search / median.
+\item Sum of piecewise-linear functions at many points: events
+  (slope and intercept deltas at breakpoints), sort, prefix sums,
+  answer by \texttt{upper\_bound}.
+\item Memory limit tiny (16--64 MB): no \texttt{vector<vector>} for
+  adjacency (use CSR: count degrees, prefix sums, one array), bitsets,
+  \texttt{int}/\texttt{short} instead of \texttt{ll}, process queries
+  offline grouped by vertex, read input in chunks.
 \end{itemize}
 
 \section{Mathematics}
@@ -127,11 +141,13 @@ $n \le 5000$ & $n^2$ & $n \le 10^{18}$ & $\log n$, $\sqrt[3]{n}$\\
 \snipn{\Ho call \texttt{initFact()} once; \texttt{N} must exceed the largest $n$ used (e.g.\ $n+k$ in stars and bars).}{Binomial coefficients}{1-math/binom.cpp}
 \snipn{\W modulus not prime, linear congruences. $ax\equiv b \pmod m$: solvable iff $g=\gcd(a,m)\mid b$; then $x = (b/g)\,x_0 \bmod (m/g)$ with $x_0$ from \texttt{egcd(a, m, x0, y0)}. CRT for many congruences: fold pairwise.}{Power, extended gcd, inverse, CRT}{1-math/modpow.cpp}
 \snip{Sieve, factorization, divisors, phi}{1-math/sieve.cpp}
+\snipn{\W $k$-th roots and logs of huge numbers (\texttt{pow}/\texttt{log} in doubles are off by one near perfect powers).}{Exact integer root and log}{1-math/iroot.cpp}
 \snip{Miller--Rabin (64-bit)}{1-math/millerrabin.cpp}
 \snipn{\W factorise numbers up to $10^{18}$ (trial division would need $10^9$ steps). \Ho rho finds a non-trivial divisor, recurse on both parts. Result unsorted: \texttt{sort} it, then group equal primes.}{Pollard rho}{1-math/pollard.cpp}
 \snipn{\W linear recurrence / DP with fixed transitions and huge $n$ (state size $k\le 100$); walks of length $n$ = $A^n$. \Ho state vector $v_{n+1} = M v_n$, answer $M^n v_0$. Prefix sums: add an accumulator state.}{Matrix power}{1-math/matrix.cpp}
 \snipn{\W systems of linear equations, rank, counting solutions ($p^{m-\mathrm{rank}}$). Over GF(2): rows as \texttt{bitset}, subtraction is XOR (same code, 64$\times$ faster). Real numbers: pick the row with the largest $|a_{ic}|$ as pivot, compare with EPS.}{Gaussian elimination mod $p$}{1-math/gauss.cpp}
 \snip{Determinant mod $p$}{1-math/det.cpp}
+\snipn{\W Fibonacci/Lucas sums, products or convolutions mod $p$ (Binet needs $\sqrt5$, which exists only in this extension when 5 is a non-residue).}{Quadratic extension field (with $\sqrt5$)}{1-math/quadfield.cpp}
 \snipn{\W max / count / existence of subset XOR. Two bases merge by inserting all vectors of one into the other ($O(60^2)$).}{XOR basis}{1-math/xorbasis.cpp}
 \snipn{\W polynomial products, ``number of pairs with $a_i+b_j=s$'' for all $s$ (convolve count arrays), DP transitions that are convolutions. \Pf inputs must be in $[0,\mathrm{MOD})$; other modulus or exact big counts $\Rightarrow$ FFT below.}{NTT (convolution mod 998244353)}{1-math/ntt.cpp}
 \snipn{\W exact integer convolution without modulus (results up to $10^{15}$), e.g.\ counting pairs by sum, string matching with wildcards ($\sum (a-b)^2ab$ trick).}{FFT (exact integer convolution)}{1-math/fft.cpp}
@@ -160,6 +176,16 @@ $n \le 5000$ & $n^2$ & $n \le 10^{18}$ & $\log n$, $\sqrt[3]{n}$\\
 \item Wilson: $(p-1)!\equiv -1 \pmod p$. Lucas: $\binom{n}{k}\equiv\prod
   \binom{n_i}{k_i} \pmod p$ (base-$p$ digits).
   $\binom{n}{k}$ is odd $\iff k \mathbin{\&} n = k$.
+\item $\sum_j \gcd(x,a_j)=\sum_{d\mid x}\varphi(d)\cdot\#\{j: d\mid a_j\}$
+  (\texttt{divPhi}). $\sum_{i\le n}\gcd(i,n)=\sum_{d\mid n} d\,\varphi(n/d)$.
+\item lcm of an arithmetic progression $a, a+d, \dots$: divide out
+  $g=\gcd(a,d)$; a prime $q\le n$, $q\nmid d$ divides the terms with index
+  $\equiv -a d^{-1} \pmod q$: take the max exponent there; primes $>n$
+  divide at most one term (keep the remaining cofactors of all terms).
+\item Comparing huge numbers/expressions (products of big numbers,
+  polynomial identities): evaluate mod a few random large primes
+  ($\sim10^{18}$, \texttt{mulmod}) or mod $2^{61}-1$; equal everywhere
+  $\Rightarrow$ equal w.h.p.
 \end{itemize}
 
 \subsection{Combinatorics}
@@ -191,6 +217,17 @@ $n \le 5000$ & $n^2$ & $n \le 10^{18}$ & $\log n$, $\sqrt[3]{n}$\\
 \item Expected value is linear: $E[\sum X_i]=\sum E[X_i]$ (indicators!).
   Geometric: success prob.\ $p$ $\Rightarrow$ expected $1/p$ tries.
   Coupon collector: $n H_n$. $P(A)$ as fraction: $a\cdot b^{-1} \bmod p$.
+\item Random $k$-subset of $\{1..n\}$: $E[\max]=\frac{k(n+1)}{k+1}$,
+  $E[\min]=\frac{n+1}{k+1}$. Harmonic numbers mod $p$: prefix sums of
+  inverses ($inv_i = -(p/i)\cdot inv_{p \bmod i}$).
+\item Sequences of length $m$ over $c$ values that contain each of $k$
+  given values: $\sum_i (-1)^i\binom{k}{i}(c-i)^m$.
+\item Connected labelled graphs: $C_n = 2^{\binom n2} -
+  \sum_{k=1}^{n-1}\binom{n-1}{k-1} C_k\, 2^{\binom{n-k}2}$. For $G(n,p)$
+  replace $2^{\binom{\cdot}2}$ by probabilities: $P_n=1-\sum_k\binom{n-1}{k-1}
+  P_k\,(1-p)^{k(n-k)}$; $E[\#\text{components}]=\sum_k\binom nk P_k(1-p)^{k(n-k)}$.
+\item Chirp: $ij=\binom{i+j}2-\binom i2-\binom j2$, so
+  $\sum_i a_i b_j x^{ij}$-type sums become convolutions.
 \end{itemize}
 
 \subsection{Sums}
@@ -209,18 +246,45 @@ Typical trick: compute $g$ by brute force for small states, find the pattern.
 \section{Data structures}
 \snip{Disjoint set union}{2-ds/dsu.cpp}
 \snip{Fenwick tree}{2-ds/fenwick.cpp}
-\snipn{\Ho change \texttt{T}, \texttt{ID} and \texttt{f}: sum ($0$), min (\texttt{LLONG\_MAX}), max (\texttt{LLONG\_MIN}), gcd ($0$), or a struct (e.g.\ max subarray sum: \{sum, pref, suf, best\}). \texttt{f} must be associative, need not be commutative. Point add: \texttt{set(i, t[i + n] + v)}.}{Segment tree (point update)}{2-ds/segtree.cpp}
-\snipn{\Ho a node stores the answer for its range plus a pending tag. \texttt{apply} updates both; \texttt{push} hands the tag to the children before going down. Other operations: change the tag. Range assign: tag = (has, value); assign overrides older tags. Assign + add: compose tags in order (new assign clears add).}{Lazy segment tree (range add)}{2-ds/lazyseg.cpp}
+\snipn{\Ho pass \texttt{ID} and \texttt{f}: sum ($0$LL), min (\texttt{LLONG\_MAX}), max (\texttt{LLONG\_MIN}), gcd ($0$), or a struct (e.g.\ max subarray sum: \{sum, pref, suf, best\}). \texttt{f} must be associative, need not be commutative. Point add: \texttt{set(i, get(i) + v)}.}{Segment tree (point update)}{2-ds/segtree.cpp}
+\snipn{\Ho fill in 6 things: node \texttt{S} with \texttt{op} and neutral \texttt{e}; tag \texttt{F} with \texttt{mp(f, s)} (apply tag to a node; keep \texttt{len} in \texttt{S} if sums need it), \texttt{comp(f, g)} (newer \texttt{f} after older \texttt{g}) and identity \texttt{id}. Check: \texttt{mp(comp(f,g), s) = mp(f, mp(g, s))}. Ready instances: add/min/sum below, chmin/sum (beats) next. \Pf \texttt{e} must be neutral (min: \texttt{LLONG\_MAX}).}{Lazy segment tree (generic)}{2-ds/lazyseg.cpp}
 \snipn{\W static array, many min/max/gcd queries (idempotent operations only; for sums use prefix sums).}{Sparse table}{2-ds/sparse.cpp}
-\snip{Monotonic stack}{2-ds/monostack.cpp}
+\snip{Monotonic stack, sliding window}{2-ds/monostack.cpp}
 \snip{Ordered set, hash map}{2-ds/pbds.cpp}
 \snipn{\W DP of the form $dp_i = \min_j (k_j x_i + b_j)$ (convex hull trick) with lines and queries in any order. \Ho add the line of $j$ after computing $dp_j$; query at $x_i$. Range of $x$ is the integer domain $[lo, hi)$; nodes are created on demand, so $\pm 10^9$ is fine. \Pf $k\cdot x+b$ must fit in \texttt{ll}.}{Li Chao tree (lines, min)}{2-ds/lichao.cpp}
 \snipn{\W an array with insert / erase / reverse / cut-and-paste at arbitrary positions plus range aggregates. \Ho every operation = \texttt{split} into pieces, modify a piece (set a tag), \texttt{merge} back. More tags: handle them in \texttt{push} like \texttt{Rev}, recompute in \texttt{pull}.}{Implicit treap}{2-ds/treap.cpp}
 \snipn{\W offline dynamic connectivity (edges added and removed): each edge lives on a time interval; put it into the $O(\log q)$ segment-tree nodes over time covering it; DFS that tree: unite the node's edges, recurse, \texttt{rollback}. Also bipartiteness over time (DSU with parity).}{DSU with rollback}{2-ds/dsu_rollback.cpp}
 \snipn{\W static array, many range queries whose answer is easy to update when one element enters/leaves the window (number of distinct values, pairs of equal values, mode with counts). Offline only. $n=q=2\cdot10^5$: about $10^8$ add/rem calls.}{Mo's algorithm}{2-ds/mo.cpp}
+\snipn{\W the window answer can be updated by \emph{adding} but not by removing (max, max xor via trie, DSU). Short queries (inside one block) are brute-forced.}{Mo's algorithm with rollback}{2-ds/morollback.cpp}
 \snipn{\W queries on old versions or on ``prefix $r$ minus prefix $l$'': $k$-th smallest in a range, count of values $\le x$ in a range (sum \texttt{Cnt} of left children while descending).}{Persistent segment tree}{2-ds/persistent.cpp}
+\snipn{\W range ``$a_i=\min(a_i,x)$'' (or max via negation) together with sums. \Ho the tag applies exactly only if $x$ is above the second maximum; otherwise \texttt{mp} sets \texttt{fail} and the generic tree recurses (amortised by the number of distinct values). Same pattern for other beats operations.}{Segment tree beats (chmin, sum)}{2-ds/beats.cpp}
+\snipn{\W ``number of visible buildings / prefix-maximum records'' under point updates.}{Records segment tree}{2-ds/records.cpp}
+\snipn{\W indices up to $10^{18}$ online (no compression possible), e.g.\ composing piecewise-linear functions, ``first position where the prefix sum reaches $t$''.}{Dynamic segment tree}{2-ds/dynseg.cpp}
+\snipn{\W DP over pairs/points where the best predecessor lies in a dominated quadrant (sort by the first key, query the other two).}{2D Fenwick (generic prefix)}{2-ds/bit2d.cpp}
+\snipn{\W offline counting of dominated points in 3 dimensions, ``count pairs with $a_j\le a_i$, $b_j\le b_i$, $c_j\le c_i$'', or offline queries over time with a Fenwick tree.}{CDQ divide and conquer}{2-ds/cdq.cpp}
 \subsection{Ideas}
 \begin{itemize}
+\item Operations like $a_i=\lfloor a_i/x\rfloor$, $\sqrt{a_i}$, $a_i \bmod x$,
+  $\lfloor\log a_i\rfloor$ on ranges: store min and max; if $f(\min)=f(\max)$
+  on a node, it becomes a range \emph{assign}, else recurse. Each value
+  changes $O(\log)$ times $\Rightarrow$ amortised fast.
+\item Range assign tag: (has, value), assign overrides add; ``find first
+  index $\ge l$ with property'' = descent (\texttt{findFirst}). Bit flips on
+  ranges: tag = flip flag, node stores count of ones.
+\item Zobrist / XOR hashing: give each value a random 64-bit key; a
+  multiset/set is the XOR (or sum) of keys; flipping bits $[l,r)$ changes the
+  hash by $P_r \oplus P_l$ (prefix XORs of keys).
+\item Intervals in a segment tree: store each interval in its $O(\log n)$
+  canonical nodes; a point query (stabbing) walks the root--leaf path.
+  DSU with ``next unmerged'' pointers skips already-processed elements:
+  every element is merged/visited once.
+\item Sqrt on time: rebuild the static structure every $\sqrt q$ updates;
+  answer queries from the structure + the pending updates.
+\item Range-sum of convolution coefficients ($\sum_{p} a_p a_{c-p}$ over
+  $p\in[l,r]$): anti-diagonal prefix sums, no FFT.
+\item Pareto front (staircase) DP on trees: keep only non-dominated
+  (w,h) pairs per subtree, merge two fronts with two pointers, prune
+  by a bound.
 \item Offline: sort queries by right end + Fenwick/segment tree
   (``number of distinct values on $[l,r]$'': keep only the last
   occurrence). Process in reverse to turn deletions into DSU unions.
@@ -243,6 +307,10 @@ Typical trick: compute $g$ by brute force for small states, find the pattern.
 \snipn{\W counting/optimising over \emph{all paths} (number of paths of length $\le K$, with sum $=X$), or ``nearest marked vertex'' queries. \Ho every path is handled at the highest centroid on it; at centroid $c$, DFS each child subtree, combine with data from previous subtrees (avoid pairs inside one subtree). Nearest marked: \texttt{best[c]} for every centroid ancestor $c$ of $v$; answer $=\min_c$ \texttt{best[c]} $+\,dist(v,c)$; depth $\le\log n$.}{Centroid decomposition}{3-graph/centroid.cpp}
 \snipn{\W many queries, each on a small set of $k$ vertices with $\sum k$ bounded: build a tree of size $<2k$ and run the DP only there.}{Virtual tree}{3-graph/virtualtree.cpp}
 \snipn{\W ``for every subtree, something about the multiset of values in it''. Same idea for merging heaps, maps of counts, etc.}{Small-to-large (DSU on tree)}{3-graph/sack.cpp}
+\snipn{\W cut vertices, vertex-biconnected components, \textbf{cactus} problems (each cycle = one block, listed in cycle order: prefix sums around it give both arc lengths). \Ho DP/LCA on the block-cut tree (round = vertex, square = block).}{Block-cut tree}{3-graph/blockcut.cpp}
+\snipn{\W every vertex has one outgoing edge (permutations, ``next'' pointers, teleports): cycles + in-trees, $k$-th successor, distance to cycle.}{Functional graph}{3-graph/functional.cpp}
+\snipn{\W greedy ``jump to the next allowed position'' many times with a budget (time, fuel): build \texttt{nxt}, lift it, answer each query in $O(\log)$. Split tree paths at the LCA and run it from both ends.}{Binary lifting with costs}{3-graph/lifting.cpp}
+\snipn{\W the forest changes online (link/cut) and you ask connectivity / root / path sums. Graph with cycles (pointer graphs): keep one ``spare'' edge per cycle outside the LCT.}{Link-cut tree}{3-graph/linkcut.cpp}
 \snip{Euler path}{3-graph/euler.cpp}
 \snipn{\W bipartite matching up to $\sim 5000$ vertices per side; larger: Dinic ($O(E\sqrt V)$). Shuffle the adjacency lists against bad cases.}{Bipartite matching (Kuhn)}{3-graph/matching.cpp}
 \snipn{\Ho modelling: source $\to$ suppliers, consumers $\to$ sink, capacities = limits. Undirected edge: \texttt{addEdge(u, v, c, c)}. Vertex capacity: split $v$ into $v_{in}\to v_{out}$. Min cut edges = saturated edges from \texttt{lvl}$\ge 0$ to \texttt{lvl}$<0$. \Pf \texttt{s != t}.}{Max flow (Dinic)}{3-graph/dinic.cpp}
@@ -272,6 +340,26 @@ Typical trick: compute $g$ by brute force for small states, find the pattern.
 \item Functional graph ($n$ vertices, out-degree 1): every component is
   a cycle with trees; use binary lifting for $k$-th successor.
 \item Tournament: has a Hamiltonian path; SCCs are linearly ordered.
+\item Orient undirected edges of a mixed graph to balance in/out degrees
+  (Euler in mixed graphs, fewest added edges): orient arbitrarily,
+  $b_v=out-in$; flow $s\to v$ (cap $b_v/2$, $b_v>0$), $v\to t$
+  ($-b_v/2$), every undirected edge $u\to v$ cap 1 (flipping it). Extra
+  edges needed $=\sum_{b_v>0} b_v - 2\cdot$maxflow (parities must match).
+\item Degree-constrained subgraph in a bipartite/directed graph (each
+  vertex exactly/at most $d_v$ edges): flow $s\to L$ (cap $d$), edges cap 1,
+  $R\to t$ (cap $d$); feasible iff saturated. Few special edges: try all
+  subsets of them.
+\item Arboricity (min \#forests covering all edges, Nash-Williams):
+  $\max_H \lceil |E_H|/(|V_H|-1)\rceil$; $K_{n,m}$: $\lceil nm/(n+m-1)\rceil$.
+  A graph without isolated vertices splits into stars (cut a spanning
+  forest bottom-up).
+\item Reachability in a DAG for all pairs: \texttt{bitset<N>} per vertex,
+  OR along reversed topological order, $O(nm/64)$; low memory: process
+  64$k$ target columns at a time.
+\item Long-path decomposition: the sum of the $k$ longest root-to-leaf
+  ``chains'' (heavy child = deepest) = max total length covered by $k$
+  root paths. HLD from a parent array with $p_i<i$: sizes by a reverse
+  loop, no recursion.
 \end{itemize}
 
 \section{Strings}
@@ -281,6 +369,8 @@ Typical trick: compute $g$ by brute force for small states, find the pattern.
 \snipn{\W sorted suffixes: find pattern by binary search ($O(|t|\log n)$), longest repeated substring $=\max$ lcp, LCS of $s,t$: SA of $s\#t$, max lcp of adjacent suffixes from different strings, $k$-th distinct substring.}{Suffix array + LCP}{4-string/sufarr.cpp}
 \snipn{\W many patterns in one text; DP over automaton states (count strings of length $n$ avoiding all patterns: states $\times$ length, forbid states with \texttt{out > 0}).}{Aho--Corasick}{4-string/aho.cpp}
 \snip{Binary trie (max XOR)}{4-string/trie.cpp}
+\snipn{\W DP over prefix XORs: ``best $dp_j$ with $x\oplus y_j\le k$''; counting pairs with XOR $\le k$ (store counts).}{XOR trie with a bound}{4-string/xortrie.cpp}
+\snip{Counting strings by prefix function}{4-string/prefcount.cpp}
 \snipn{\W everything about all substrings in $O(n)$: distinct count, occurrences of each, LCS of two strings (walk $t$ on SAM($s$), on mismatch follow \texttt{link}, keep current length), smallest cyclic shift (SAM of $s+s$).}{Suffix automaton}{4-string/sam.cpp}
 \subsection{Ideas}
 \begin{itemize}
@@ -290,6 +380,8 @@ Typical trick: compute $g$ by brute force for small states, find the pattern.
   $s$ is a power of a word of length $n-p_{n-1}$ iff that divides $n$.
 \item Count occurrences of every prefix: \texttt{cnt[p[i]]++}, then for $i$ from $n$
   down: \texttt{cnt[p[i-1]] += cnt[i]}, then \texttt{cnt[i]++}.
+\item Palindromic subsequences: $dp[l][r]=dp[l+1][r]+dp[l][r-1]-dp[l+1][r-1]$,
+  plus $dp[l+1][r-1]+1$ if $s_l=s_r$ (counts occurrences).
 \end{itemize}
 
 \section{Geometry}
@@ -301,6 +393,7 @@ Typical trick: compute $g$ by brute force for small states, find the pattern.
 \snip{Minimum enclosing circle}{5-geom/mec.cpp}
 \snip{Point in convex polygon, closest pair}{5-geom/convex.cpp}
 \snip{Polygon inside polygon}{5-geom/polyinside.cpp}
+\snipn{\W counting triangles/pairs by angles around every point (acute, obtuse, containing the origin): $O(n^2\log n)$.}{Angular sweep counting}{5-geom/anglecount.cpp}
 \subsection{Formulas}
 \begin{itemize}
 \item Triangle: area $=\frac12|ab\sin C|=\sqrt{s(s-a)(s-b)(s-c)}$;
@@ -318,6 +411,15 @@ Typical trick: compute $g$ by brute force for small states, find the pattern.
   within the current best distance $d$; $O(n\log n)$.
 \item Points in convex polygon in $O(\log n)$: binary search on the fan
   from vertex 0.
+\item Points strictly inside triangle $abc$ (general position, sorted by
+  $x$: $a<b<c$): $|B_{ab}+B_{bc}-B_{ac}| - [b \text{ below } ac]$, where
+  $B_{ij}$ = \#points below segment $ij$ (table in $O(n^2\log n)$ by angular
+  sort + Fenwick). Empty triangles: count with $=0$.
+\item Hull with original indices: sort indices by point, run the same chain.
+  Maximisers of $X\cdot x + Y\cdot y$ ($X,Y>0$) lie on the upper-right chain.
+\item Exact integer intersection: \texttt{lineInterInt} ($\_\_$int128,
+  divisibility check); circles/angles with huge coordinates: exact
+  arithmetic mod $2^{61}-1$ (\texttt{hmul}, \texttt{hpow}).
 \end{itemize}
 
 \section{DP and techniques}
@@ -341,6 +443,13 @@ Typical trick: compute $g$ by brute force for small states, find the pattern.
   passing the ``parent side'' value down (prefix/suffix of children).
 \item Small answers/strange constraints ($n\le 20$, $k\le 10$, $\sum\le 10^5$)
   hint at bitmask, meet-in-the-middle ($2^{n/2}$), or $\sqrt{}$ splitting.
+\item Digit DP on sums ($A+B=C$ digit by digit): process from the least
+  significant digit with state = carry (+ previous digits if needed);
+  ``digit differs from the previous one'' $=$ total $-$ same, in $O(1)$
+  with row/column sums.
+\item Composing monotone piecewise-linear functions (slopes 0/1, clamps
+  $\min(\max(x,a),b)$): the composition is again a clamp-plus-shift, store
+  $(lo, hi, shift)$; general case: dynamic segment tree over $x$.
 \end{itemize}
 \subsection{STL reminders and pitfalls}
 \begin{itemize}

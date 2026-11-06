@@ -1,16 +1,17 @@
 // Fenwick tree, 0-indexed: point add, prefix sum. O(log n)
-struct BIT {
-  int n; vector<ll> t;
+// BIT b(n) holds ll; BIT<mint> / BIT<double> for other types.
+template <class T = ll> struct BIT {
+  int n; vector<T> t;
   BIT(int n) : n(n), t(n + 1) {}
-  void add(int i, ll v) {
+  void add(int i, T v) {
     for (i++; i <= n; i += i & -i) t[i] += v; }
-  ll sum(int i) {             // a[0] + ... + a[i-1]
-    ll s = 0;
+  T sum(int i) {              // a[0] + ... + a[i-1]
+    T s = 0;
     for (; i > 0; i -= i & -i) s += t[i];
     return s; }
-  ll sum(int l, int r) { return sum(r) - sum(l); }  // [l, r)
+  T sum(int l, int r) { return sum(r) - sum(l); }   // [l, r)
   // smallest i with a[0]+..+a[i] >= s (all a >= 0), n if none
-  int lowerBound(ll s) {
+  int lowerBound(T s) {
     int pos = 0;
     for (int pw = 1 << __lg(n); pw; pw >>= 1)
       if (pos + pw <= n && t[pos + pw] < s)

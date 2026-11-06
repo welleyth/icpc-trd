@@ -1,10 +1,12 @@
 # ICPC Team Reference Document — team UZI (Jagiellonian University)
 
-A compact, tested ICPC notebook: **[UZI-TRD.pdf](UZI-TRD.pdf)** (13 A4 pages).
+A compact, tested ICPC notebook: **[UZI-TRD.pdf](UZI-TRD.pdf)** (18 A4 pages).
 
 Every snippet is short enough to type during a contest, uses one of the
 fastest standard implementations, and is stress-tested against brute force
-(63 test files, run with AddressSanitizer + UBSan + `_GLIBCXX_DEBUG`).
+(run with AddressSanitizer + UBSan + `_GLIBCXX_DEBUG`).
+Its coverage was checked problem by problem against all past UZI
+(Jagiellonian University) contests 2023-2026; missing techniques were added.
 
 ## Format (general ICPC TRD rules)
 
@@ -17,11 +19,11 @@ fastest standard implementations, and is stress-tested against brute force
 | Section | Snippets |
 |---|---|
 | Contest | template, compile & stress-test script, fast input, limits table, pre-submit / WA checklist, "when stuck" ideas |
-| Mathematics | mint (998244353), binomials, egcd / inverse / CRT, sieve & factorisation, Miller–Rabin, Pollard rho, matrix power, Gauss mod p, determinant, XOR basis, NTT, exact FFT, Berlekamp–Massey + k-th term, Lagrange interpolation, discrete log, floor sum; number theory / combinatorics / games formulas |
-| Data structures | DSU, Fenwick, segment tree, lazy segment tree, sparse table, monotonic stack, ordered set + safe hash, Li Chao tree, implicit treap, DSU with rollback, Mo's algorithm, persistent segment tree |
-| Graphs | Dijkstra / 0-1 BFS / Bellman–Ford, topological sort, SCC + 2-SAT, bridges & articulation points, LCA, HLD, centroid decomposition, virtual tree, small-to-large, Euler path, Kuhn, Dinic, min-cost flow, Hungarian |
-| Strings | prefix / Z function, hashing (mod 2^61-1), Manacher, suffix array + LCP, Aho–Corasick, binary trie, suffix automaton |
-| Geometry | integer point / segment / polygon primitives, convex hull, diameter, angle sort, circles, minimum enclosing circle, point in convex polygon, closest pair, polygon inside polygon |
+| Mathematics | mint (998244353), binomials, egcd / inverse / CRT / geometric sum mod any m, sieve & factorisation, divisors with phi, exact k-th root, Miller–Rabin, Pollard rho, matrix power, Gauss mod p, determinant, XOR basis, NTT, exact FFT, Berlekamp–Massey + k-th term, Lagrange interpolation, discrete log, floor sum, F_p[sqrt 5]; number theory / combinatorics / games formulas |
+| Data structures | DSU, Fenwick, segment tree, lazy segment tree, sparse table, monotonic stack, ordered set + safe hash, Li Chao tree, implicit treap, DSU with rollback, Mo's algorithm (+ rollback version), persistent segment tree, segment tree beats, records segment tree, dynamic segment tree, 2D Fenwick, CDQ divide & conquer, sliding window |
+| Graphs | Dijkstra / 0-1 BFS / Bellman–Ford, topological sort, SCC + 2-SAT, bridges & articulation points, LCA, HLD, centroid decomposition, virtual tree, small-to-large, block-cut tree (cacti), functional graphs, binary lifting with costs, link-cut tree, Euler path, Kuhn, Dinic, min-cost flow, Hungarian |
+| Strings | prefix / Z function, hashing (mod 2^61-1), Manacher, suffix array + LCP, Aho–Corasick (+ dictionary links), binary tries (max XOR, XOR ≤ k), suffix automaton, counting strings by prefix function |
+| Geometry | integer point / segment / polygon primitives, convex hull, diameter, angle sort, circles, minimum enclosing circle, point in convex polygon, closest pair, polygon inside polygon, angular sweep counting, exact integer line intersection |
 | DP & techniques | LIS, bitmask / digit / SOS patterns, divide & conquer opt., Knuth opt., Aliens trick, re-rooting, binary / ternary search, bit tricks, Simpson integration, STL pitfalls |
 
 Advanced snippets have a short **When / How / Pitfalls** note above the code.
@@ -54,10 +56,12 @@ bash tests/run_math_ds.sh        # math + data structures
 bash tests/run_graph_str_geom.sh # graphs, strings, geometry
 bash tests/run_new_a.sh          # newer math / DS / DP snippets
 bash tests/run_new_b.sh          # newer graph / string / geometry snippets
+bash tests/run_new_c.sh          # UZI-coverage additions: math / DS
+bash tests/run_new_d.sh          # UZI-coverage additions: graphs / strings / geometry / IO
 g++ -std=gnu++20 -fsyntax-only tests/compile_all.cpp   # everything compiles together
 ```
 
-A full run takes about 10 minutes (sanitizer builds).
+A full run takes about 15 minutes (sanitizer builds).
 
 ## Credits
 

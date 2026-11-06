@@ -12,6 +12,12 @@ ll egcd(ll a, ll b, ll& x, ll& y) {
 ll inverse(ll a, ll m) {
   ll x, y; egcd((a % m + m) % m, m, x, y);
   return (x % m + m) % m; }
+// 1 + r + ... + r^(k-1) mod m for ANY m (no inverse needed).
+ll geo(ll r, ll k, ll m) {
+  if (k == 0) return 0;
+  if (k % 2) return (1 + r % m * geo(r, k - 1, m)) % m;
+  ll h = geo(r, k / 2, m);
+  return (h + h * power(r, k / 2, m)) % m; }
 // CRT: x = a (mod m), x = b (mod n), 0<=a<m, 0<=b<n.
 // Returns {x, lcm(m,n)} or {-1,-1} if no solution.
 pair<ll, ll> crt(ll a, ll m, ll b, ll n) {
